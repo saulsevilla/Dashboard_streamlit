@@ -70,7 +70,7 @@ def others(df1, col):
     df1[col] = df1[col].apply(lambda x: x if not freq[x] else 'Otros')
     return df1
 
-df = pd.read_csv('Visualización/Streamlit/Dashboard_streamlit/data/anime_final.csv')
+df = pd.read_csv('./data/anime_final.csv')
 # print(df)
 cont_vars = [x for x in df.columns if (df[x].dtype == 'float64' or df[x].dtype == 'int64') and x!='anime_id']
 disc_vars = [x for x in df.columns if x not in cont_vars]
