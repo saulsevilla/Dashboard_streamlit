@@ -1,7 +1,7 @@
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
-import requests
+# import requests
 from plotly.subplots import make_subplots
 import pandas as pd
 
@@ -59,13 +59,35 @@ def hist_matrix(df : pd.DataFrame, columns : list = None, rows : int = None, col
         fig1.add_trace(go.Histogram(x=df[col], name=col) , row=row, col=colum)
 
     fig1.update_layout(title_text='Histogramas', showlegend=False)
-    fig1.show()
+    return fig1
 
-st.write('# Distribuciones')
+def others(df1, col):
+    df1 = df1.copy()
 
-df = pd.read_csv('./data/anime_final.csv')
-cont_vars = [x for x in df.columns if df[x].dtype == 'float64' or df[x].dtype == 'int64']
+    freq = (df1[col].value_counts(True) < 0.05)
+    if sum(freq)==1:
+        return df1
+    df1[col] = df1[col].apply(lambda x: x if not freq[x] else 'Otros')
+    return df1
+
+df = pd.read_csv('Visualización/Streamlit/Dashboard_streamlit/data/anime_final.csv')
+# print(df)
+cont_vars = [x for x in df.columns if (df[x].dtype == 'float64' or df[x].dtype == 'int64') and x!='anime_id']
 disc_vars = [x for x in df.columns if x not in cont_vars]
 cat_vars = [x for x in disc_vars if df[x].nunique() < 20]
 
-st.plotly_chart(hist_matrix(df, cont_vars))
+
+st.write('# Distribuciones')
+
+col1, col2 = st.columns([0.4,0.6])
+
+with col1:
+    st.write('## Discretas')
+    for col in cat_vars:
+        fig = px.pie(others(df, col), names=col, values='anime_id', title=col)
+        fig.update_layout(width=800, height=400)
+        st.plotly_chart(fig, use_container_width=True, theme='streamlit')
+
+with col2:
+    st.write('## Continuas')
+    st.plotly_chart(hist_matrix(df, cont_vars), use_container_width=True, theme='streamlit')
